@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Cards</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+  <style>
+    .custom-card {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 5px 7px rgba(0, 0, 0, 0);
+      border-left: 15px solid #B0B0B0;
+      position: relative;
+      max-width: 380px;
+      height: 150px;
+    }
+
+    .icon-container {
+      background: #FFC107;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-container i {
+      font-size: 24px;
+      color: white;
+    }
+
+    .card-content {
+      flex-grow: 1;
+      margin-left: 15px;
+    }
+
+    .card-content h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .card-content p {
+      margin: 0;
+      color: gray;
+      font-size: 0.9rem;
+    }
+
+    /* 채팅 모달 창 크기 */
+    .modal-dialog {
+      max-width: 500px;
+      height: 70vh;
+    }
+
+    .modal-content {
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <div id="tokenValue"></div>
+  <div class="container mt-4">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/index">
+          <img src="{{ url_for('static', filename='people_icon.png') }}" alt="" width="30" height="24"
+            class="d-inline-block align-text-top">
+          파티 구함!
+        </a>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav ms-auto"> <!-- 오른쪽 정렬 -->
+            <li class="nav-item">
+              <a class="nav-link" href="/index">Home</a>
+            </li>
+            <li class="nav-item">
+              <a id="logoutButton" class="nav-link" href="#">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+
+
+    <div class="row align-items-center mt-3">
+      <!-- 사용자 인사말 -->
+      <div class="container mt-5 mb-5">
+        <div class="custom-card d-flex align-items-center p-3 shadow">
+          <div class="card-content">
+            <h3><span id="userGreeting" class="text-gray-700 font-semibold"></span>
+              <img id="rankImage"
+                src="https://i.namu.wiki/i/kfAzvKOnV8TgCe51TjU_AIdFeS4TrQMszXZ0_3aA8Yf9fMVWMMRGNG3Jce9neVsRby9Lb1KYEN6_mDRL9wP7rnhkIjm4XYj2Yg0kKzn6TOEi5busjaKB-CNLfhTkqVS5XpgcqusLMl7Dpve0Kx_7KQ.webp"
+                class="rounded-circle ms-2" width="110" height="110">
+            </h3>
+            <span class="growth">🔥퀘스트를 X회 클리어하셨습니다!🔥</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 파티 생성 버튼 -->
+      <div class="col text-end">
+        <button class="btn btn-success hover:bg-blue-600 text-white w-25 h-[60px] mb-3 text-bold" data-bs-toggle="modal"
+          data-bs-target="#myModal">
+          파티 생성
+        </button>
+      </div>
+    </div>
+
+
+    <!-- 파티 카드 카테고리 -->
+    <div class="row mt-3">
+      <div class="col">
+        <form class="d-flex justify-content-center">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="category" id="eat" value="eat">
+            <label class="form-check-label" for="eat">식사</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="category" id="exercise" value="exercise">
+            <label class="form-check-label" for="exercise">운동</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="category" id="study" value="study">
+            <label class="form-check-label" for="study">스터디</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="category" id="etc" value="etc">
+            <label class="form-check-label" for="etc">기타</label>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <hr style="border: solid 10px red;">
+    <!-- 모달 -->
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalLabel">정보 입력</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="title" class="form-label">제목:</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+              </div>
+              <div class="mb-3">
+                <label for="name" class="form-label">카테고리:</label>
+                <select class="form-control" id="name" name="name" required>
+                  <option value="eat" id="eat">식사</option>
+                  <option value="exercise" id="exercise">운동</option>
+                  <option value="study" id="study">스터디</option>
+                  <option value="etc" id="etc">기타</option>
+
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="content" class="form-label">내용:</label>
+                <textarea class="form-control" id="content" name="content" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="date" class="form-label">일시:</label>
+                <input type="datetime-local" class="form-control" id="date" name="date" required>
+              </div>
+              <div class="mb-3">
+                <label for="participants" class="form-label">인원:</label>
+                <input type="number" class="form-control" id="participants" name="participants" required>
+              </div>
+              <!-- post 버튼 함수 걸어주기기 -->
+              <button type="submit" class="btn btn-primary" id="postPtData">제출</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="row" id="card-box">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between">
+            <span class="badge bg-success">Health</span>
+            <span class="text-muted"><i class="bi bi-people"></i> 3/5</span>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Morning Workout Group</h5>
+            <div class="d-flex align-items-center mb-2">
+              <small class="text-muted">Founded by Alex Kim</small>
+            </div>
+            <p class="card-text">Join us for morning workouts including jogging, stretching, and basic strength
+              training. All fitness levels welcome!</p>
+            <div class="d-flex text-muted small mb-3">
+              <span><i class="bi bi-calendar"></i> Mon, Wed, Fri</span>
+              <span class="ms-3"><i class="bi bi-clock"></i> 7:00 AM</span>
+            </div>
+            <button class="btn btn-primary w-100" id="joinBtn">Join Party</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  </div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+
+
+  <script>
+    const token = sessionStorage.getItem('token');
+    // localStorage -> sessionStorage
+    tokenob = JSON.parse(sessionStorage.getItem('userdata'));
+
+    const UserName = tokenob.user_name;
+    const partyCode = tokenob.user_cord;
+
+
+
+
+    // post 하며 파티의 내용을 보내는 버튼의 변수
+    const $postPtBtn = document.querySelector('#postPtData');
+    const $joinBtn = document.querySelector('#joinBtn');
+    const $title = document.querySelector('#title');
+    const $category = document.querySelector('#name');
+    const $content = document.querySelector('#content');
+    const $date = document.querySelector('#date');
+    const $participants = document.querySelector('#participants');
+    const $cardBox = document.querySelector('#card-box');
+
+    $postPtBtn.addEventListener('click', () => postPtData());
+
+    document.addEventListener("DOMContentLoaded", function () {
+      let result = [];
+      fetch("http://127.0.0.1:5000/lodingdata")
+        .then((response) => response.json())
+        .then((data) => {
+
+          if (data && data.length > 0) {
+            for (let i = 0; i < data.length; i++) {
+              let meetingTime = formatDateTime(data[i].date_give);
+              addparty(data[i].category_give, data[i].partparticipants_give, data[i].title_give,
+                data[i].partymaneserName, data[i].partymanaser_cord, data[i].content_give, meetingTime, data[i].userArr, data[i]._id, data[i].manager_count);
+              console.log(data[i]);
+            }
+          }
+        }).catch((error) => console.error("에러발생", error))
+    });
+
+
+    function addparty(category, participants, title, partyName, partyCord, content, date, memberArr, _id, managerCount) {
+
+      let checkCode = {
+        check: false,
+        index: 0
+      }
+
+      for (let i = 0; i < memberArr.length; i++) {
+        if (partyCode === memberArr[i]) {
+          checkCode.check = true;
+          checkCode.index = i
+          break;
+        }
+      }
+
+      if (checkCode.check) {
+        let currentParticipants = memberArr.length + 1; // 현재 참가자 수
+        let isFull = currentParticipants >= participants; // 최대 인원 여부
+        let managerRankImg = getRankImgUrl(managerCount);
+        let partyCard = `
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span class="badge bg-success">${category}</span>
+                    <span class="badge bg-warning text-black">파티 참여 중!</span>
+                    <span class="text-muted"><i class="bi bi-people"></i>${(memberArr.length + 1)}/${participants}</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">${title}</h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <small class="text-muted">${partyName} ${partyCord}
+                        <img src="${managerRankImg}" alt="랭크이미지" style="width: 30px; height: 30px; margin-left: 5px;">
+                        </small>
+                    </div>
+                    <p class="card-text">${content}</p>
+                    <div class="d-flex text-muted small mb-3">
+                        <span><i class="bi bi-calendar"></i> 예정시간: ${date}</span>
+                        <span class="ms-3"><i class="bi bi-clock"></i></span>
+                    </div>
+                      <div  class="d-flex justify-content-between">
+                      <button class="btn btn-danger w-50 me-2" id="deleteBtn">탈퇴하기</button>
+                      <button class="btn btn-secondary chat-btn w-50" data-bs-toggle="modal" data-bs-target="#chatModal"><i class="bi bi-chat-left-quote-fill"></i></button>                     
+                </div>
+            </div>
+            `;
+
+        const borderColor = getRankColor(managerCount);
+        const cardElement = document.createElement("div");
+        cardElement.innerHTML = partyCard;
+        cardElement.className = "col-md-4";
+        const cardInner = cardElement.querySelector(".card");
+        if (cardInner) {
+          cardInner.style.border = `6px solid ${borderColor}`;
+        }
+        // 파티장 테두리 추가!
+
+        const $deleteBtn = cardElement.querySelector('#deleteBtn');
+        $deleteBtn.setAttribute("data-party-id", _id);
+        $deleteBtn.addEventListener("click", function () {
+          quitParty(checkCode.index, partyCord);
+        });
+
+
+        $cardBox.appendChild(cardElement);
+        return;
+      }
+
+      if (partyCode === partyCord) {
+        let currentParticipants = memberArr.length + 1; // 현재 참가자 수
+        let isFull = currentParticipants >= participants; // 최대 인원 여부
+        let managerRankImg = getRankImgUrl(managerCount);  // 랭크 이미지 URL
+        let managerCard = `
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span class="badge bg-success">${category}</span>
+                    <span class="badge bg-primary">내가 파티 리더! </span>
+                    <span class="text-muted"><i class="bi bi-people"></i>${(memberArr.length + 1)} / ${participants}</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">${title}</h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <small class="text-muted">${partyName} ${partyCord}
+                        <img src="${managerRankImg}" alt="랭크이미지" style="width: 30px; height: 30px; margin-left: 5px;">
+                        </small>
+                    </div>
+                    <p class="card-text">${content}</p>
+                    <div class="d-flex text-muted small mb-3">
+                        <span><i class="bi bi-calendar"></i> 예정시간: ${date}</span>
+                        <span class="ms-3"><i class="bi bi-clock"></i></span>
+                    </div>
+                        <div  class="d-flex justify-content-between">
+                        <button class="btn btn-danger w-50 me-2" id="deleteBtn">삭제하기</button>
+                        <button class="btn btn-secondary chat-btn w-50" data-bs-toggle="modal" data-bs-target="#chatModal"><i class="bi bi-chat-left-quote-fill"></i></button>
+                </div>
+            </div>
+            `;
+        const borderColor = getRankColor(managerCount);
+        const cardElement = document.createElement("div");
+        cardElement.innerHTML = managerCard; // ← 추가!
+        cardElement.className = "col-md-4";
+        const cardInner = cardElement.querySelector(".card");
+        if (cardInner) {
+          cardInner.style.border = `6px solid ${borderColor}`;
+        }
+        // 파티장 테두리 추가!
+
+        const $deleteBtn = cardElement.querySelector('#deleteBtn');
+        $deleteBtn.setAttribute("data-party-id", _id);
+        $deleteBtn.addEventListener("click", function () {
+          deleteParty(this);
+        });
+
+        $cardBox.appendChild(cardElement);
+        return;
+
+      } else {
+        let currentParticipants = memberArr.length + 1; // 현재 참가자 수
+        let isFull = currentParticipants >= participants; // 최대 인원 여부
+        let managerRankImg = getRankImgUrl(managerCount);
+        let card = `         
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span class="badge bg-success">${category}</span>
+                    <span class="text-muted"><i class="bi bi-people"></i>${(memberArr.length + 1)}/${participants}</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">${title}</h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <small class="text-muted">${partyName} ${partyCord}
+                        <img src="${managerRankImg}" alt="랭크이미지" style="width: 30px; height: 30px; margin-left: 5px;">
+                        </small>
+                    </div>
+                    <p class="card-text">${content}</p>
+                    <div class="d-flex text-muted small mb-3">
+                        <span><i class="bi bi-calendar"></i> 예정시간: ${date}</span>
+                        <span class="ms-3"><i class="bi bi-clock"></i></span>
+                    </div>
+                    <button class="btn btn-primary w-100" id="joinBtn" ${isFull ? " disabled" : ""}>
+                      ${isFull ? "가득참" : "참석하기"}
+                    </button>                 
+                </div>
+            </div>`
+
+        const borderColor = getRankColor(managerCount);
+        const cardElement = document.createElement("div");
+        cardElement.innerHTML = card;
+        cardElement.className = "col-md-4";
+
+        const cardInner = cardElement.querySelector(".card");
+        if (cardInner) {
+          cardInner.style.border = `6px solid ${borderColor}`;
+        }
+        // 파티장 테두리 추가!
+
+        let joinButton = cardElement.querySelector("#joinBtn"); // 버튼 선택
+        if (joinButton && !isFull) {
+          joinButton.addEventListener("click", () => joinParty(partyCord));
+        }
+        
+        $cardBox.appendChild(cardElement);
+      }
+    }
+
+    function quitParty(index, partyCode) {
+      fetch("http://127.0.0.1:5000/quitParty", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // 요청 헤더
+          "Authorization": sessionStorage.getItem("token"), // 토큰 추가
+
+        },
+        body: JSON.stringify({
+          partyCode: partyCode,
+          index: index,
+
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.result) {
+            window.location.reload();
+            console.log(data.result);
+
+          } else {
+            console.log("실패");
+          }
+        })
+        .catch((error) => console.error("에러발생", error));
+    }
+
+
+    function joinParty(partyCord_give) {
+      fetch("http://127.0.0.1:5000/joinParty", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // 요청 헤더
+          "Authorization": sessionStorage.getItem('token')  // 토큰 추가
+        },
+        body: JSON.stringify({
+          partyCord_give: partyCord_give,
+          party_member: UserName,
+          partymember_cord: partyCode,
+
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.result === "success") {
+            console.log(" 참가 성공!");
+            location.reload(); // 새로고침
+            const participantText = document.querySelector(`#party-${partyCord_give} .participant-count`).textContent;
+            const [currentCount, maxCount] = participantText.split('/').map(Number);
+            updateParticipantCount(partyCord_give, currentCount + 1, maxCount);
+          }
+          else if (data.result === "full") {
+            console.log("파티 가득참!");
+            alert("해당 파티는 가득 찼습니다!");
+          }
+          else {
+            console.log("참가 실패:", data.message);
+          }
+        })
+        .catch(error => console.error("에러 발생", error));
+    }
+
+    function deleteParty(buttonElement) {
+      const partyId = buttonElement.getAttribute("data-party-id");
+      console.log("🗑️ 삭제 버튼 클릭됨, 전달된 파티 ID:", partyId);  // ✅ 삭제 요청 전 ID 확인
+
+      if (!partyId) {
+        console.error("❌ 파티 ID가 없습니다! 삭제 요청 중단");
+        return;
+      }
+
+      fetch("http://127.0.0.1:5000/deleteParty", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": sessionStorage.getItem('token')  // ✅ 토큰 포함
+        },
+        body: JSON.stringify({
+          partyId: partyId  // ✅ 서버에 전송되는 데이터 확인
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("🛠️ 서버 응답:", data);  // ✅ 서버 응답 확인
+          if (data.result === "success") {
+            console.log("✅ 삭제 성공!");
+            window.location.reload();
+          } else {
+            console.error("❌ 삭제 실패:", data.msg);
+          }
+        })
+        .catch((error) => console.error("❌ 삭제 중 에러 발생", error));
+    }
+
+    function postPtData() {
+      const dateInput = $date.value; // 사용자가 입력한 날짜
+      const formattedDate = dateInput.replace(/[-:T]/g, ''); // '-'와 ':' 및 'T'를 제거
+      const date_give = parseInt(formattedDate, 10); // 문자열을 정수로 변환
+
+
+
+      fetch("http://127.0.0.1:5000/postPtdata", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // 요청 헤더
+          "Authorization": sessionStorage.getItem('token')  // 토큰 추가
+        },
+        body: JSON.stringify({
+          title_give: $title.value,
+          category_give: $category.value,
+          content_give: $content.value,
+          date_give: date_give,
+          partparticipants_give: $participants.value,
+          name_give: UserName,
+          partyCord_give: partyCode,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.result) {
+            window.location.reload();
+            console.log("성공");
+          } else if (data.result === false) {
+            alert("세 개 이상의 파티는 만들 수 없습니다.");
+            console.log("실패");
+          }
+        })
+        .catch((error) => console.error("에러발생", error));
+    }
+
+
+
+    // Logout 버튼 클릭 이벤트
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      // 로컬 저장소에서 데이터 삭제
+      sessionStorage.clear(); // 모든 세션션 저장소 데이터 삭제
+      // 또는 특정 키만 삭제하려면 아래처럼 사용
+      // localStorage.removeItem("token");
+
+      // 로그아웃 후 리다이렉트 (예: 로그인 페이지로 이동)
+      window.location.href = "/login"; // 로그인 페이지 경로로 변경
+    });
+
+
+    //<!-- userName 님 환영합니다 기능 Greeting ..-->
+    document.addEventListener("DOMContentLoaded", () => {
+      // 로컬 저장소에서 "token" 키의 값을 가져옴
+      const token = sessionStorage.getItem('token');
+      const userData = JSON.parse(sessionStorage.getItem('userdata'));
+      // localStorage -> sessionStorage
+
+      // user_name과 user_code를 추출
+      const userName = userData.user_name;
+      const userCode = userData.user_cord;
+
+      // 인사말 표시
+      const greetingElement = document.getElementById("userGreeting");
+      greetingElement.innerText = `${userName}(${userCode})`;
+    });
+
+    // 최신화된 count 값을 받아오는 함수
+    function updateUserCount() {
+      fetch("http://127.0.0.1:5000/getUserData", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          //        "Authorization": localStorage.getItem('token')
+          "Authorization": sessionStorage.getItem('token')
+          //세션 스토리지로 변경경
+
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          // 퀘스트 클리어 횟수 업데이트
+          const growthElement = document.querySelector(".growth");
+          growthElement.innerText = `🔥퀘스트를 ${data.count}회 클리어하셨습니다!🔥`;
+          // 카운트 확인 후 등급에 맞는 테두리 색상 업데이트
+          updateRankDisplay(data.count);
+        })
+        .catch(error => console.error("Error fetching user data:", error));
+    }
+    // 최초 count 업데이트 호출, 30초 마다 최신화 하기 -> 파티 활동 버튼 클릭하면 바로 반영되게 바꿀까 생각중...
+    updateUserCount();
+    setInterval(updateUserCount, 30000);
+
+    function getRankColor(count) {
+      if (count === 0) return "#333537";             // 언랭
+      else if (count >= 1 && count <= 2) return "#706260"; // 아이언
+      else if (count >= 3 && count <= 4) return "#5b3e38"; // 브론즈
+      else if (count >= 5 && count <= 7) return "#C0C0C0"; // 실버
+      else if (count >= 8 && count <= 10) return "#FFD700"; // 골드
+      else if (count >= 11 && count <= 13) return "#6db0a7"; // 플레티넘
+      else if (count >= 14 && count <= 17) return "#1089d2"; // 다이아몬드
+      else if (count >= 18 && count <= 20) return "#c64def"; // 마스터
+      else if (count >= 21 && count <= 24) return "#db0f27"; // 그랜드마스터
+      else if (count >= 25) return "#6ee4f7";              // 챌린저
+      else return "#333537"; // 기본 색상 (언랭)
+    }
+
+    function getRankImgUrl(count) {
+      // 언랭
+      if (count === 0) {
+        return "https://i.namu.wiki/i/kfAzvKOnV8TgCe51TjU_AIdFeS4TrQMszXZ0_3aA8Yf9fMVWMMRGNG3Jce9neVsRby9Lb1KYEN6_mDRL9wP7rnhkIjm4XYj2Yg0kKzn6TOEi5busjaKB-CNLfhTkqVS5XpgcqusLMl7Dpve0Kx_7KQ.webp";
+      }
+      // 아이언
+      else if (count >= 1 && count <= 2) {
+        return "https://i.namu.wiki/i/M3K-UvA8XXrblJLXfMRyoKzjBYLm3TewzTLS56syvZpMZijb53_8B-zjE9a5n1FG0v781GZjV7yFdMsNlF6oI7O404yjSl6Lq6YFp0eljDuyid9SrMj4AYJSey8dMfJyE4_DOhyCYiYDOig2NLT_Jw.webp";
+      }
+      // 브론즈
+      else if (count >= 3 && count <= 4) {
+        return "https://i.namu.wiki/i/VjAt4AR7-YybDF5t0OcZOH0AXNoUeiYJ16HKZVbMHSbWZR-QNfdwYNdZOaGoQACeq489qNc1NGrvibSrq_H3psz3FsX7Fno5cNgdlVI-H72AIXc8SauLZ3dDmEIgEl8ex0dMT_B4PoA1FmSqQX-LHA.webp";
+      }
+      // 실버
+      else if (count >= 5 && count <= 7) {
+        return "https://i.namu.wiki/i/JDJdUsMT5i7pCBbk9-MnTbW7HmuLh869BS1YAsvP2yvq9xyVbA--7-Yh7dNaANxB1AUO_WQ6vPRXa14qHIfnA1jPSa6dhmCLsYtILJfrIPyIMqaE7SicC15Lm3BFbOTRSIgvbPxZKx34rs-igq_Z0Q.webp";
+      }
+      // 골드
+      else if (count >= 8 && count <= 10) {
+        return "https://i.namu.wiki/i/KqTKVeiodhzX6Dytg8hJaLvXwnwEHBWKUgoeu_Op68FNbKZHLQ9d9vJo_ox8uKk66NhL7VNGXPZz3eMwkl4KfA5Ls2IpzXMgWA_PRol8Xb5kiuKFcr1UK7OaXmkSXtouBz39yntO3aXSkFBeZIEtRg.webp";
+      }
+      // 플레티넘
+      else if (count >= 11 && count <= 13) {
+        return "https://i.namu.wiki/i/gP_x4dW-gOM3dQhYVSl-vlaD0iK3XTxrYNgZqIeSHcPGsSpOb6tHizDWdXD8UrDx5buuE9TJWgxsWALxN-E6BYf434roJ8doUutYox5YPgSud40tgEDr-Nd-6SxhFIEVpNl4BVSn_UbgPSHqx3Wm5A.webp";
+      }
+      // 다이아몬드
+      else if (count >= 14 && count <= 16) {
+        return "https://i.namu.wiki/i/43pIN748vJtG1nYSKj8FR0Xm0GVXI9SzC-pdabd8emqv8cxJX7MdAZjFPivet21xsDbnvCWrLwYp7bWsOTu8Ncc9GVhq16jv5JYjy4hwrJXaY6XD__uqLNhzTTwNJTKZvieDQLj8KwsFQibSUjelMw.webp";
+      }
+      // 마스터
+      else if (count >= 17 && count <= 20) {
+        return "https://i.namu.wiki/i/K_yzQ-ZLlGI-Bb8ZinWDbFG905HJOl-KI984ZfYZixPtf690vW6638_aLE5wo4Gu3qvTp_DHguWDw9nRjvPkpph9XiCw3g-fZaB1qsH2Y15WU9Yc730PQq-9GJxkZl6Xr_CQAMhZGQfnMtW6Oxn8Iw.webp";
+      }
+      // 그랜드마스터
+      else if (count >= 21 && count <= 24) {
+        return "https://i.namu.wiki/i/lDhZeMTQmeOc4PJFAnDPfXsBdKCY_yOrLrmAkwfYOZNG9uMF-4RsOdVaKnXbAegwl5FR1lvKfHGdfY2pon8II8L2W31WdKLN5iTvRFExF6p70PWPvS-X_ZCNWbtHWvPlmuMAd8Q7n7lyskDhrW78UA.webp";
+      }
+      // 챌린저
+      else if (count >= 25) {
+        return "https://i.namu.wiki/i/E0G5Aud-0N2extBFUz9sMlR8i9GOjmoS5aLc03d1OKnQKseaWLgmL6vN7Xu3nPRKOohY0huSiG1KAW-0yfYmXuft7OYXt2rR2KEvC-qHf3GbxZVQXYxUXTRsCHy04KKbffwn2SSheCKu6U_Vd1vbuA.webp";
+      }
+
+      // 기본값(언랭랭)
+      return "https://i.namu.wiki/i/kfAzvKOnV8TgCe51TjU_AIdFeS4TrQMszXZ0_3aA8Yf9fMVWMMRGNG3Jce9neVsRby9Lb1KYEN6_mDRL9wP7rnhkIjm4XYj2Yg0kKzn6TOEi5busjaKB-CNLfhTkqVS5XpgcqusLMl7Dpve0Kx_7KQ.webp";
+    }
+
+    function updateRankDisplay(count) {
+      const color = getRankColor(count);
+      const userCard = document.querySelector('.custom-card');
+      if (userCard) {
+        userCard.style.borderLeft = `15px solid ${color}`;
+      }
+      const userImg = document.querySelector('#rankImage');
+      if (userImg) {
+        userImg.src = getRankImgUrl(count);
+      }
+    }
+
+    function formatDateTime(number) {
+      // 정수를 문자열로 변환
+      const numberStr = number.toString();
+
+      // 년도 제외하고 나머지 부분 추출
+      const monthDayTime = numberStr.slice(4); // '03140607'
+
+      // 월, 일, 시, 분으로 나누기
+      const month = monthDayTime.slice(0, 2);  // '03'
+      const day = monthDayTime.slice(2, 4);    // '14'
+      const hour = monthDayTime.slice(4, 6);   // '16'
+      const minute = monthDayTime.slice(6, 8);  // '07'
+
+      // 최종 문자열 생성
+      return `${parseInt(month)}월 ${parseInt(day)}일 ${parseInt(hour)}:${minute}분`;
+    }
+
+    // Add this to your existing JavaScript
+    document.querySelectorAll('input[name="category"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const selectedCategory = e.target.value;
+
+        fetch(`http://127.0.0.1:5000/categorySwitch?category=${selectedCategory}`)
+          .then(response => response.json())
+          .then(data => {
+            document.querySelector('#card-box').innerHTML = '';
+            if (data && data.length > 0) {
+              data.forEach(item => {
+                const managerCount = parseInt(item.manager_count);
+                let meetingTime = formatDateTime(item.date_give);
+                addparty(
+                  item.category_give,
+                  item.partparticipants_give,
+                  item.title_give,
+                  item.partymaneserName,
+                  item.partymanaser_cord,
+                  item.content_give,
+                  meetingTime,
+                  item.userArr,
+                  item._id,
+                  managerCount
+                );
+              });
+            }
+          })
+          .catch(error => console.error("에러발생", error));
+      });
+    });
+
+    function checkAndDeleteExpiredParties() {
+      const now = new Date();
+      const currentFormattedDate = now.toISOString().replace(/[-:T.]/g, '').slice(0, 12); // 현재 시간을 'YYYYMMDDHHMM' 형식으로 변환
+      const currentDate = parseInt(currentFormattedDate, 10); // 현재 시간을 정수로 변환
+
+      fetch("http://127.0.0.1:5000/partyTimeOver", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // 요청 헤더
+        },
+        body: JSON.stringify({
+          date_give: currentDate // 현재 시간을 서버로 전송
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.length > 0) {
+            console.log("만료된 파티가 삭제되었습니다:", data);
+          } else {
+            console.log("삭제할 만료된 파티가 없습니다.");
+          }
+        })
+        .catch((error) => console.error("에러 발생", error));
+    }
+
+    // 30초마다 checkAndDeleteExpiredParties 함수 실행
+    setInterval(checkAndDeleteExpiredParties, 30000);
+
+  </script>
+
+</body>
+
+</html>
